@@ -1,0 +1,65 @@
+name: Push → Open/Update PR
+
+on:
+  push:
+    branches: ['issue-*']
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  ensure-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open PR if not exists
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo  = context.repo.repo;
+            const head  = context.ref.replace('refs/heads/', '');
+
+            // Tente d'extraire l'issue # depuis le nom de branche
+            const m = head.match(/^issue-(\d+)(?:-.+)?$/);
+            if (!m) return;
+            const issue_number = Number(m[1]);
+
+            // Base = branche par défaut
+            const { data: repoData } = await github.rest.repos.get({ owner, repo });
+            const base = repoData.default_branch;
+
+            // Cherche une PR existante pour cette branche
+            const { data: prs } = await github.rest.pulls.list({ owner, repo, head: `${owner}:${head}`, state: 'open' });
+            if (prs.length) {
+              // Met à jour la description si le lien "Closes" manque
+              const pr = prs[0];
+              if (!/Closes\s+#\d+/i.test(pr.body || '')) {
+                await github.rest.pulls.update({
+                  owner, repo, pull_number: pr.number,
+                  body: `${(pr.body || '').trim()}\n\nCloses #${issue_number}`
+                });
+              }
+              return;
+            }
+
+            // Récupère l'issue pour le titre
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number });
+
+            const title = `Issue #${issue.number}: ${issue.title}`;
+            const body  = `Closes #${issue.number}\n\nPR créée automatiquement au premier push.`;
+
+            const { data: pr } = await github.rest.pulls.create({
+              owner, repo, title, head, base, body, draft: false
+            });
+
+            // Optionnel: label & assignee
+            try { await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: ['needs-review'] }); } catch {}
+            try { await github.rest.issues.addAssignees({ owner, repo, issue_number: pr.number, assignees: [issue.user.login] }); } catch {}
+
+            // Commente l'issue
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: issue.number,
+              body: `🔁 PR #${pr.number} ouverte pour la branche \`${head}\`.`
+            });
