@@ -13,7 +13,7 @@ jobs:
   ensure-pr:
     runs-on: ubuntu-latest
     steps:
-      - name: Open PR if not exists
+      - name: Open PR if not exists + set statuses
         uses: actions/github-script@v7
         with:
           script: |
@@ -21,7 +21,26 @@ jobs:
             const repo  = context.repo.repo;
             const head  = context.ref.replace('refs/heads/', '');
 
-            // Tente d'extraire l'issue # depuis le nom de branche
+            // Helpers
+            const STATUS = ['not started','in progress','in review','changes requested','approved'];
+            async function setStatus_onPR(pr_number, name) {
+              for (const s of STATUS) {
+                if (s !== name) {
+                  try { await github.rest.issues.removeLabel({ owner, repo, issue_number: pr_number, name: s }); } catch {}
+                }
+              }
+              await github.rest.issues.addLabels({ owner, repo, issue_number: pr_number, labels: [name] });
+            }
+            async function setStatus_onIssue(issue_number, name) {
+              for (const s of STATUS) {
+                if (s !== name) {
+                  try { await github.rest.issues.removeLabel({ owner, repo, issue_number, name: s }); } catch {}
+                }
+              }
+              await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [name] });
+            }
+
+            // Identifie l'issue depuis le nom de branche
             const m = head.match(/^issue-(\d+)(?:-.+)?$/);
             if (!m) return;
             const issue_number = Number(m[1]);
@@ -30,23 +49,26 @@ jobs:
             const { data: repoData } = await github.rest.repos.get({ owner, repo });
             const base = repoData.default_branch;
 
-            // Cherche une PR existante pour cette branche
+            // PR existante ?
             const { data: prs } = await github.rest.pulls.list({ owner, repo, head: `${owner}:${head}`, state: 'open' });
             if (prs.length) {
-              // Met à jour la description si le lien "Closes" manque
               const pr = prs[0];
-              if (!/Closes\s+#\d+/i.test(pr.body || '')) {
+              // S'assure que le body ferme l'issue
+              const body = (pr.body || '');
+              if (!/Closes\s+#\d+/i.test(body)) {
                 await github.rest.pulls.update({
                   owner, repo, pull_number: pr.number,
-                  body: `${(pr.body || '').trim()}\n\nCloses #${issue_number}`
+                  body: `${body.trim()}\n\nCloses #${issue_number}`
                 });
               }
+              // Statuts "in review"
+              await setStatus_onPR(pr.number, 'in review');
+              await setStatus_onIssue(issue_number, 'in review');
               return;
             }
 
-            // Récupère l'issue pour le titre
+            // Ouvre une PR
             const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number });
-
             const title = `Issue #${issue.number}: ${issue.title}`;
             const body  = `Closes #${issue.number}\n\nPR créée automatiquement au premier push.`;
 
@@ -54,11 +76,11 @@ jobs:
               owner, repo, title, head, base, body, draft: false
             });
 
-            // Optionnel: label & assignee
-            try { await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: ['needs-review'] }); } catch {}
-            try { await github.rest.issues.addAssignees({ owner, repo, issue_number: pr.number, assignees: [issue.user.login] }); } catch {}
+            // Statuts "in review" (PR + Issue)
+            await setStatus_onPR(pr.number, 'in review');
+            await setStatus_onIssue(issue.number, 'in review');
 
-            // Commente l'issue
+            // Note sur l’issue
             await github.rest.issues.createComment({
               owner, repo, issue_number: issue.number,
               body: `🔁 PR #${pr.number} ouverte pour la branche \`${head}\`.`

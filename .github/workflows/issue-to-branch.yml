@@ -10,10 +10,11 @@ permissions:
 
 jobs:
   create-branch:
+    # à l’ouverture OU quand on ajoute explicitement le label "create-branch" (facultatif)
     if: github.event.action == 'opened' || (github.event.action == 'labeled' && github.event.label.name == 'create-branch')
     runs-on: ubuntu-latest
     steps:
-      - name: Create branch from default branch
+      - name: Create branch and set status
         uses: actions/github-script@v7
         with:
           script: |
@@ -23,40 +24,59 @@ jobs:
             const owner = context.repo.owner;
             const repo  = context.repo.repo;
 
-            // slug du titre
-            const slug = issue.title
+            // -------- Helpers --------
+            const STATUS = ['not started','in progress','in review','changes requested','approved'];
+            async function setStatus_onIssue(issue_number, name) {
+              // retire autres statuts
+              for (const s of STATUS) {
+                if (s !== name) {
+                  try { await github.rest.issues.removeLabel({ owner, repo, issue_number, name: s }); } catch {}
+                }
+              }
+              // ajoute ce statut
+              await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [name] });
+            }
+            // -------------------------
+
+            // Slug à partir du titre
+            const slug = (issue.title || '')
               .toLowerCase()
-              .replace(/[^\w\- ]+/g, '')   // enlève ponctuation
+              .replace(/[^\w\- ]+/g, '')
               .trim()
               .replace(/\s+/g, '-')
-              .slice(0, 40);               // limite longueur
+              .slice(0, 40);
 
             const branch = `issue-${issue.number}${slug ? '-' + slug : ''}`;
 
-            // base = branche par défaut (ex: main)
+            // Base = branche par défaut
             const { data: repoData } = await github.rest.repos.get({ owner, repo });
             const base = repoData.default_branch;
 
+            // SHA de base
             const { data: refData } = await github.rest.git.getRef({ owner, repo, ref: `heads/${base}` });
             const sha = refData.object.sha;
 
-            // crée la branche si pas déjà là
+            // Crée la branche (ignore si déjà existante)
             try {
               await github.rest.git.createRef({ owner, repo, ref: `refs/heads/${branch}`, sha });
             } catch (e) {
-              if (e.status !== 422) throw e; // 422 = already exists
+              if (e.status !== 422) throw e;
             }
 
+            // Statut: in progress
+            await setStatus_onIssue(issue.number, 'in progress');
+
+            // Commentaire d’instructions
             await github.rest.issues.createComment({
               owner, repo, issue_number: issue.number,
               body:
                 `✅ Branche \`${branch}\` créée depuis \`${base}\`.\n\n` +
-                `**Bosser dessus :**\n\`\`\`bash\n` +
+                `**Travailler dessus :**\n` +
+                "```bash\n" +
                 `git fetch\n` +
-                `git switch ${branch}\n# ... commits ...\n` +
-                `git push -u origin ${branch}\n\`\`\`\n` +
-                `Le premier push créera automatiquement une Pull Request liée au ticket.`
+                `git switch ${branch}\n` +
+                "# ... commits ...\n" +
+                `git push -u origin ${branch}\n` +
+                "```\n\n" +
+                `Quand prêt, ouvrez une Pull Request vers \`${base}\` (ou laissez le workflow automatique si activé).`
             });
-            try {
-              await github.rest.issues.addLabels({ owner, repo, issue_number: issue.number, labels: ['in progress'] });
-            } catch {}
