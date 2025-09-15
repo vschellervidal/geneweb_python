@@ -1,0 +1,19 @@
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+dist/
+build/
+.coverage
+coverage.xml
+
+# OCaml/GeneWeb build artifacts
+geneweb/_build/
+geneweb/_opam/
+geneweb/.merlin
+geneweb/*.install
+geneweb/**/.ocamlformat
+geneweb/**/.coverage
+geneweb/**/.cache
