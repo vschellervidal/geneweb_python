@@ -12,21 +12,21 @@ cd geneweb_python
 3. Briefly describe what to do
 4. Create the issue ```Create```
 
-The bot will automatically create a new ```branch``` from ```main``` with the name of the issue.  
+The bot will automatically create a new ```branch``` from ```main``` with the name of the issue.
 Example: ```issue-1-ameliorer-le-readme```
 
 ## Go to the issue branch
 1. Fetch remotes branches ```git fetch```
-2. Go to the issue branch ```git switch issue-1-ameliorer-le-readme```  
+2. Go to the issue branch ```git switch issue-1-ameliorer-le-readme```
 
 ## Make your changes
 0. Code what describe your issue
 1. See modifying files ```git status```
 2. Add files ```git add README.md```
 3. Commit with a concise message ```git commit -m "ajouter section installation rapide"```
-4. Push ```git push -u origin issue-1-ameliorer-le-readme```  
+4. Push ```git push -u origin issue-1-ameliorer-le-readme```
 
-At the first push, the bot will automatically open au ```Pull Request``` on ```main```  
+At the first push, the bot will automatically open au ```Pull Request``` on ```main```
 
 ## Review a Pull Request
 In coming...
