@@ -7,6 +7,12 @@ import pytest
 from geneweb.adapters.ocaml_bridge.bridge import run_gwb2ged
 
 
+def _normalize_gedcom(text: str) -> list[str]:
+    # Normalise espaces et lignes vides, ignore l'ordre non-significatif en tête
+    lines = [line.rstrip() for line in text.splitlines() if line.strip()]
+    return lines
+
+
 @pytest.mark.smoke
 def test_gwb2ged_smoke_demo(tmp_path: Path) -> None:
     if os.getenv("RUN_OCAML_TESTS", "0") != "1":
@@ -31,6 +37,10 @@ def test_gwb2ged_smoke_demo(tmp_path: Path) -> None:
 
     # Assert
     assert out_file.exists()
-    # Basic sanity: GEDCOM starts with HEAD
-    head = out_file.read_text(encoding="utf-8", errors="ignore").splitlines()[:5]
-    assert any("0 HEAD" in line for line in head)
+    content = out_file.read_text(encoding="utf-8", errors="ignore")
+    lines = _normalize_gedcom(content)
+    # En-tête minimal attendu
+    assert any(line.startswith("0 HEAD") for line in lines)
+    assert any("1 CHAR " in line for line in lines)
+    assert any("1 SOUR " in line for line in lines)
+    assert any("1 SUBM" in line for line in lines)
