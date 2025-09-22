@@ -34,7 +34,7 @@ dev = [
 ]
 
 [project.scripts]
-geneweb = "geneweb.adapters.cli.main:app"
+geneweb = "geneweb.adapters.cli.main:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/geneweb"]
