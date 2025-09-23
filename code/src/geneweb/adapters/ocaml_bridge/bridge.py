@@ -60,6 +60,7 @@ def _run(cmd: Sequence[str], cwd: Path | None = None, timeout: int = 120) -> str
 def run_gwb2ged(args: Sequence[str]) -> str:
     root = _default_root()
     exe = _bin_path(root, "gwb2ged/gwb2ged.exe")
+
     if exe.exists():
         return _run([str(exe), *args], cwd=root)
     dune = shutil.which("dune")
@@ -73,6 +74,7 @@ def run_gwb2ged(args: Sequence[str]) -> str:
 def run_ged2gwb(args: Sequence[str]) -> str:
     root = _default_root()
     exe = _bin_path(root, "ged2gwb/ged2gwb.exe")
+
     if exe.exists():
         return _run([str(exe), *args], cwd=root)
     dune = shutil.which("dune")
@@ -86,6 +88,7 @@ def run_ged2gwb(args: Sequence[str]) -> str:
 def run_gwd(args: Sequence[str]) -> str:
     root = _default_root()
     exe = _bin_path(root, "gwd/gwd.exe")
+
     if exe.exists():
         return _run([str(exe), *args], cwd=root)
     dune = shutil.which("dune")

@@ -16,7 +16,6 @@ app = FastAPI(title="GeneWeb Python API", version="0.1.0")
 def healthz() -> dict[str, str]:
     return {"status": "ok"}
 
-
 def _resolve_input_dir(raw: str) -> str:
     # Si chemin absolu, utiliser tel quel
     p = Path(raw)
