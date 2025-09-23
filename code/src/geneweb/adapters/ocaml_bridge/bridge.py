@@ -60,33 +60,40 @@ def _run(cmd: Sequence[str], cwd: Path | None = None, timeout: int = 120) -> str
 def run_gwb2ged(args: Sequence[str]) -> str:
     root = _default_root()
     exe = _bin_path(root, "gwb2ged/gwb2ged.exe")
-    if not exe.exists():
-        # Try using dune exec if available
-        dune = shutil.which("dune")
-        if dune:
-            return _run(
-                [dune, "exec", str(root / "bin/gwb2ged/gwb2ged.exe"), "--", *args], cwd=root
-            )
-    return _run([str(exe), *args], cwd=root)
+
+    if exe.exists():
+        return _run([str(exe), *args], cwd=root)
+    dune = shutil.which("dune")
+    if dune:
+        return _run([dune, "exec", str(root / "bin/gwb2ged/gwb2ged.exe"), "--", *args], cwd=root)
+    raise FileNotFoundError(
+        f"gwb2ged introuvable. Compilez avec dune dans {root} ou définissez {GENEWEB_OCAML_ROOT_ENV} vers un dépôt compilé."
+    )
 
 
 def run_ged2gwb(args: Sequence[str]) -> str:
     root = _default_root()
     exe = _bin_path(root, "ged2gwb/ged2gwb.exe")
-    if not exe.exists():
-        dune = shutil.which("dune")
-        if dune:
-            return _run(
-                [dune, "exec", str(root / "bin/ged2gwb/ged2gwb.exe"), "--", *args], cwd=root
-            )
-    return _run([str(exe), *args], cwd=root)
+
+    if exe.exists():
+        return _run([str(exe), *args], cwd=root)
+    dune = shutil.which("dune")
+    if dune:
+        return _run([dune, "exec", str(root / "bin/ged2gwb/ged2gwb.exe"), "--", *args], cwd=root)
+    raise FileNotFoundError(
+        f"ged2gwb introuvable. Compilez avec dune dans {root} ou définissez {GENEWEB_OCAML_ROOT_ENV} vers un dépôt compilé."
+    )
 
 
 def run_gwd(args: Sequence[str]) -> str:
     root = _default_root()
     exe = _bin_path(root, "gwd/gwd.exe")
-    if not exe.exists():
-        dune = shutil.which("dune")
-        if dune:
-            return _run([dune, "exec", str(root / "bin/gwd/gwd.exe"), "--", *args], cwd=root)
-    return _run([str(exe), *args], cwd=root)
+
+    if exe.exists():
+        return _run([str(exe), *args], cwd=root)
+    dune = shutil.which("dune")
+    if dune:
+        return _run([dune, "exec", str(root / "bin/gwd/gwd.exe"), "--", *args], cwd=root)
+    raise FileNotFoundError(
+        f"gwd introuvable. Compilez avec dune dans {root} ou définissez {GENEWEB_OCAML_ROOT_ENV} vers un dépôt compilé."
+    )

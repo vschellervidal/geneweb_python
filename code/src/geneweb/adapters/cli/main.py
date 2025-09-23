@@ -50,6 +50,5 @@ def ged2gwb(
 if __name__ == "__main__":
     app()
 
-
 def main() -> None:
     app()

@@ -33,7 +33,7 @@ def test_gwb2ged_smoke_demo(tmp_path: Path) -> None:
     out_file = tmp_path / "demo.ged"
 
     # Act
-    run_gwb2ged(["-i", str(demo_dir), "-o", str(out_file)])
+    run_gwb2ged([str(demo_dir), "-o", str(out_file)])
 
     # Assert
     assert out_file.exists()
