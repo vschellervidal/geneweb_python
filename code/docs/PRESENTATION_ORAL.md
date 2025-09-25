@@ -303,7 +303,7 @@ git clone https://github.com/vschellervidal/geneweb_python.git
 cd geneweb_python/code/
 
 # Installer en mode développement
-pip install -e .[dev]
+pip install . -q
 
 # Configurer l'environnement
 export GENEWEB_OCAML_ROOT=/path/to/geneweb
@@ -402,7 +402,7 @@ export GENEWEB_OCAML_ROOT=/Users/valentin/Desktop/tek5/piscine/legacy/geneweb
 
 ### 2. Test CLI
 ```bash
-geneweb gwb2ged /Users/valentin/Desktop/tek5/piscine/legacy/geneweb/distribution/demo.gwb -o demo.ged
+geneweb gwb2ged /Users/valentin/Desktop/tek5/piscine/legacy/geneweb/distribution/bases/demo.gwb -o demo.ged
 cat demo.ged | head -10
 ```
 
