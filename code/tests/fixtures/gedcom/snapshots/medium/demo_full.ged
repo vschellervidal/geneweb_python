@@ -1,0 +1,15 @@
+0 HEAD
+1 SOUR GeneWeb
+2 VERS 7.1-beta
+2 NAME gwb2ged.exe
+2 CORP INRIA
+3 ADDR http://www.geneweb.org
+2 DATA demo.gwb
+1 DATE 25 SEP 2025
+2 TIME 17:04:25
+1 FILE tmpxuc7dy76.ged
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 TRLR
