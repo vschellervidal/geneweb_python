@@ -1,25 +1,12 @@
-__pycache__/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.venv/
-venv/
+**/__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+*.egg-info/
 dist/
 build/
-.coverage
-coverage.xml
-
-# OCaml/GeneWeb build artifacts
-geneweb/_build/
-geneweb/_opam/
-geneweb/.merlin
-geneweb/*.install
-geneweb/**/.ocamlformat
-geneweb/**/.coverage
-geneweb/**/.cache
-
-
-# Fixtures générées localement (à ignorer)
-tests/fixtures/gwb/small/demo_min/
-tests/fixtures/gwb/medium/demo_copy/
-tests/fixtures/gwb/edge/encodage_min/
+.mypy_cache/
+.ruff_cache/
+.benchmarks/
+.DS_Store
